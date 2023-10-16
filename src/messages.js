@@ -16,14 +16,14 @@ export const getMessages = async(id = null) => {
     if(id === null) {
         return db.messages
             .orderBy("id").reverse()
-            .limit(5)
+            .limit(25)
             .toArray()
     } else {
         // Ref: https://dexie.org/docs/Collection/Collection.offset()#paged-or-queries
         return db.messages
             .orderBy("id").reverse()
             .filter(x => x.id < id)
-            .limit(5)
+            .limit(25)
             .toArray()
     }
 }

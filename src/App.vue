@@ -6,6 +6,7 @@ import {nextTick, ref} from "vue";
   const user = ref(null)
   const messages = ref([])
   const scrollRef = ref(null)
+  const inputMessage = ref('')
 
   const loadMessages = (id = null) => {
     if(id === null) {
@@ -38,16 +39,17 @@ import {nextTick, ref} from "vue";
     }
   }
 
-  const sendMessage = (e) => {
-    if(e.target.value !== '') {
-      addMessage(user.value, e.target.value)
-          .then(() => e.target.value = '')
+  const sendMessage = () => {
+    if(inputMessage.value !== '') {
+      addMessage(user.value, inputMessage.value)
+          .then(() => inputMessage.value = '')
     }
   }
 
   new BroadcastChannel('chat-data').onmessage = (msg) => {
     messages.value.push(msg.data)
     nextTick(() => {
+      scrollRef.value &&
       scrollRef.value.scrollTo(0, scrollRef.value.scrollHeight)
     })
   }
@@ -96,12 +98,15 @@ import {nextTick, ref} from "vue";
       </div>
 
       <div class="border-t-2 border-gray-200 pt-4 mt-2">
-        <div class="flex gap-x-1">
+        <form @submit.prevent="sendMessage"
+            class="flex gap-x-1">
           <input type="text" placeholder="Write your message"
+                 v-model="inputMessage"
                  @keydown.enter="sendMessage"
                  class="w-full focus:outline-none focus:placeholder-gray-400
                   text-gray-600 placeholder-gray-600 bg-gray-200 rounded-md px-2">
-          <button type="button" class="inline-flex items-center justify-center rounded-lg px-4 py-3
+          <button type="submit"
+                  class="inline-flex items-center justify-center rounded-lg px-4 py-3
               transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none">
             <span class="font-bold">Send</span>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -110,7 +115,7 @@ import {nextTick, ref} from "vue";
                   d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
             </svg>
           </button>
-        </div>
+        </form>
       </div>
     </div>
   </div>
