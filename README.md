@@ -1,6 +1,6 @@
 # chat-demo
 
-This template should help get you started developing with Vue 3 in Vite.
+This is vue 3 demo of chat box, without using backend.
 
 ## Recommended IDE Setup
 
@@ -21,7 +21,11 @@ npm install
 ```sh
 npm run dev
 ```
+### Test 
 
+```sh
+npm run test:unit
+```
 ### Compile and Minify for Production
 
 ```sh
