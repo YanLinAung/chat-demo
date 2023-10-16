@@ -1,11 +1,63 @@
 <script setup>
 
-  import {ref} from "vue";
+import {nextTick, ref} from "vue";
+  import {addMessage, getMessages} from "@/messages";
 
   const user = ref(null)
+  const messages = ref([])
+  const scrollRef = ref(null)
+
+  const loadMessages = (id = null) => {
+    if(id === null) {
+      return getMessages()
+          .then((rows) => {
+            messages.value = rows.reverse()
+            return rows.length
+          })
+    } else {
+      return getMessages(id)
+          .then((rows) => {
+            messages.value = rows.reverse().concat(messages.value)
+            return rows.length
+          })
+    }
+  }
+
+  const handleScroll = (e) => {
+    let element = e.target
+
+    if(element.scrollTop < 10) {
+      let first = messages.value[0]
+      console.log('loading...' + first.id)
+      loadMessages(first.id)
+          .then((size) => {
+            if(size !== 0) {
+              element.scrollTo({top: 50})
+            }
+          })
+    }
+  }
+
+  const sendMessage = (e) => {
+    if(e.target.value !== '') {
+      addMessage(user.value, e.target.value)
+          .then(() => e.target.value = '')
+    }
+  }
+
+  new BroadcastChannel('chat-data').onmessage = (msg) => {
+    messages.value.push(msg.data)
+    nextTick(() => {
+      scrollRef.value.scrollTo(0, scrollRef.value.scrollHeight)
+    })
+  }
 
   const login = (e) => {
     user.value = e.target.value
+    loadMessages()
+        .then(() => {
+          scrollRef.value.scrollTo(0, scrollRef.value.scrollHeight)
+        })
   }
 </script>
 
@@ -30,63 +82,14 @@
     <div class="flex flex-col  h-auto justify-between min-w-max mx-auto my-3
   block p-6 bg-white border border-gray-200 rounded-lg shadow w-[500px]">
 
-      <div
+      <div @scroll="handleScroll" ref="scrollRef"
           class="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue w-full
           scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
 
-        <div>
+        <div v-for="message in messages">
             <span class="px-4 py-2 rounded-lg inline-block bg-gray-300 text-gray-600">
-              <span class="font-bold font-italic">Lin</span>
-              lorem ipsum
-            </span>
-        </div>
-
-        <div class="mb-2">
-            <span class="px-4 py-2 rounded-lg inline-block bg-gray-300 text-gray-600">
-              <span class="font-bold font-italic">Lin</span>
-              lorem ipsum
-            </span>
-        </div>
-
-        <div class="mb-2">
-            <span class="px-4 py-2 rounded-lg inline-block bg-gray-300 text-gray-600">
-              <span class="font-bold font-italic">Lin</span>
-              lorem ipsum
-            </span>
-        </div>
-
-        <div class="mb-2">
-            <span class="px-4 py-2 rounded-lg inline-block bg-gray-300 text-gray-600">
-              <span class="font-bold font-italic">Lin</span>
-              lorem ipsum
-            </span>
-        </div>
-
-        <div class="mb-2">
-            <span class="px-4 py-2 rounded-lg inline-block bg-gray-300 text-gray-600">
-              <span class="font-bold font-italic">Lin</span>
-              lorem ipsum
-            </span>
-        </div>
-
-        <div class="mb-2">
-            <span class="px-4 py-2 rounded-lg inline-block bg-gray-300 text-gray-600">
-              <span class="font-bold font-italic">Lin</span>
-              lorem ipsum
-            </span>
-        </div>
-
-        <div class="mb-2">
-            <span class="px-4 py-2 rounded-lg inline-block bg-gray-300 text-gray-600">
-              <span class="font-bold font-italic">Lin</span>
-              lorem ipsum
-            </span>
-        </div>
-
-        <div class="mb-2">
-            <span class="px-4 py-2 rounded-lg inline-block bg-gray-300 text-gray-600">
-              <span class="font-bold font-italic">Lin</span>
-              lorem ipsum
+              <span class="font-bold font-italic">{{message.id }} - {{ message.name }}</span>
+                {{ message.content }}
             </span>
         </div>
 
@@ -95,6 +98,7 @@
       <div class="border-t-2 border-gray-200 pt-4 mt-2">
         <div class="flex gap-x-1">
           <input type="text" placeholder="Write your message"
+                 @keydown.enter="sendMessage"
                  class="w-full focus:outline-none focus:placeholder-gray-400
                   text-gray-600 placeholder-gray-600 bg-gray-200 rounded-md px-2">
           <button type="button" class="inline-flex items-center justify-center rounded-lg px-4 py-3
