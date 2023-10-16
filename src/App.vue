@@ -85,7 +85,7 @@ const login = (e) => {
   block p-6 bg-white border border-gray-200 rounded-lg shadow w-[500px]">
 
       <h4 class="text-3xl text-gray-900 mb-4 text-center">{{ user }}</h4>
-      
+
       <div @scroll="handleScroll" ref="scrollRef"
            class="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue w-full
           scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
@@ -104,7 +104,7 @@ const login = (e) => {
               class="flex gap-x-1">
           <input type="text" placeholder="Write your message"
                  v-model="inputMessage"
-                 @keydown.enter="sendMessage"
+                 autofocus
                  class="w-full focus:outline-none focus:placeholder-gray-400
                   text-gray-600 placeholder-gray-600 bg-gray-200 rounded-md px-2">
           <button type="submit"
